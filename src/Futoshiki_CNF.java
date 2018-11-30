@@ -22,8 +22,10 @@ public class Futoshiki_CNF {
     static final int VARS = BOARDN+EQUALITS+EQUALITS;
     static int clauses = 0;
     static ArrayList<String> DIMACS_CNF = new ArrayList();
-    static int[] solution = {-1,-2,3,-4,-5,6,-7,-8,-9,-10,-11,12,13,-14,-15,-16,-17,-18,-19,20,21,-22,-23,-24,-25,-26,27,-28,-29,30,-31,-32,33,-34,-35,-36,-37,-38,39,-40,-41,42,-43,-44,-45,-46,-47,48,-49,50,-51,-52,-53,-54,-55,56,57,-58,-59,-60,-61,-62,63,-64,65,66,-67,68,69,70,71,72,73,74,75,-76,-77,-78,79,-80,-81,-82,-83,-84,-85,-86,-87,-88,-89,-90,-91,-92,-93,-94,-95,-96,-97,-98,-99,100,101,102,103,104,105,-106,107,108,109,-110,111,112,-113,-114,-115,-116,-117,118,-119,-120,-121,-122,-123,-124,-125,-126,-127,-128,-129,-130,-131,-132,-133,134,-135,-136};
-
+    static int[] solution = {-1,-2,-3,4,-5,-6,7,-8,-9,10,-11,-12,13,-14,-15,-16,-17,18,-19,-20,21,-22,-23,-24,-25,-26,-27,28,-29,-30,31,-32,33,-34,-35,-36,-37,-38,-39,40,-41,-42,43,-44,-45,46,-47,-48,-49,-50,51,-52,-53,54,-55,-56,57,-58,-59,-60,-61,-62,-63,64,65,66,67,68,69,70,71,72,73,-74,75,76,-77,-78,-79,-80,-81,-82,-83,-84,-85,86,-87,-88,-89,-90,-91,-92,-93,-94,-95,-96,-97,-98,-99,-100,101,102,103,104,105,106,107,108,-109,110,111,112,-113,-114,-115,-116,-117,-118,-119,-120,-121,-122,-123,-124,-125,-126,-127,-128,-129,-130,-131,-132,133,-134,-135,-136};
+    static final int NO_EQUALITY = 1;
+    static final int GREATER_THAN_EQUALITY = 3;
+    static final int LESS_THAN_EQUALITY = 2;
     /*
      * Generate DIMACS CNF format and print any given SAT solution
      * @param args the command line arguments
@@ -40,6 +42,8 @@ public class Futoshiki_CNF {
         equalitiesLessThanHorizontal();
         equalitiesGreaterThanVertical();
         equalitiesLessThanVertical();
+        onlyOneEqualityHorizontalPerCell();
+        onlyOneEqualityVerticalPerCell();
 
         print_DIMACS_CNF_format();
         
@@ -66,18 +70,16 @@ public class Futoshiki_CNF {
         return (EQUALITY_SPACES *(equalities-1) + N*(row-1) + (column-1) + 1)+BOARDN+EQUALITS;
     }
 
-
     private static void addFacts(){        
         // Facts
         DIMACS_CNF.add("c Pre-assigned entries");
         // Update the number of facts according to the number of added DIMACS CNF clauses
-        int facts=4;
-        DIMACS_CNF.add(toEqualitiesVariableVertical(2, 2, 2) + " 0");
-        DIMACS_CNF.add(toEqualitiesVariableVertical(3, 3, 2) + " 0");
-        DIMACS_CNF.add(toEqualitiesVariableHorizontal(2, 1, 3) + " 0");
-        DIMACS_CNF.add(toEqualitiesVariableHorizontal(3, 4, 3) + " 0");
+        int facts=3;
+        DIMACS_CNF.add(toEqualitiesVariableHorizontal(LESS_THAN_EQUALITY, 4, 1) + " 0");
+        DIMACS_CNF.add(toEqualitiesVariableHorizontal(GREATER_THAN_EQUALITY, 4, 1) + " 0");
+        DIMACS_CNF.add(toEqualitiesVariableVertical(GREATER_THAN_EQUALITY, 3, 1) + " 0");
 
-
+        //DIMACS_CNF.add(toBoardVariable(4, 4, 1) + " 0");
         clauses += facts; 
     }
 
@@ -107,7 +109,6 @@ public class Futoshiki_CNF {
         }
     }
 
-
     private static void atLeastOneEqualityInCellVertically(){
         DIMACS_CNF.add("c Each equality appears once per equality cell vertically:");
         for(int cell = 1; cell <= EQUALITY_SPACES; cell++){
@@ -120,7 +121,6 @@ public class Futoshiki_CNF {
             clauses++;
         }
     }
-
 
     private static void eachDigitAtMostOnesInRow(){
         // Each digit appears at most once in each row
@@ -137,12 +137,48 @@ public class Futoshiki_CNF {
         }
     }
 
+    private static void onlyOneEqualityHorizontalPerCell(){
+        // Each digit appears at most once in each row
+        DIMACS_CNF.add("c Only one equality per horizontal cell:");
+            for (int column = 1; column <= N-1; column++) {
+                for (int row = 1; row <= N; row++) {
+                    for (int equality = 1; equality <= EQUALITIES; equality++) {
+                    String clause = toEqualitiesVariableHorizontal(equality,row,column)+" ";
+                    for(int num = 1; num<=EQUALITIES; num++)
+                    {
+                        if(num!=equality)
+                        clause+="-"+String.valueOf(toEqualitiesVariableHorizontal(num,row,column))+" ";
+                    }
+                    DIMACS_CNF.add(clause+"0");
+                }
+            }
+        }
+    }
+
+    private static void onlyOneEqualityVerticalPerCell(){
+        // Each digit appears at most once in each row
+        DIMACS_CNF.add("c Only one equality per vertical cell:");
+        for (int column = 1; column <= N; column++) {
+            for (int row = 1; row <= N-1; row++) {
+                for (int equality = 1; equality <= EQUALITIES; equality++) {
+                    String clause = toEqualitiesVariableVertical(equality,row,column)+" ";
+                    for(int num = 1; num<=EQUALITIES; num++)
+                    {
+                        if(num!=equality)
+                            clause+="-"+String.valueOf(toEqualitiesVariableVertical(num,row,column))+" ";
+                    }
+                    DIMACS_CNF.add(clause+"0");
+                }
+            }
+        }
+    }
+
     private static void equalitiesLessThanHorizontal(){
         DIMACS_CNF.add("c If an less than equality exists horizontally, then that should be honored:");
         for (int digit = 1; digit <= N; digit++) {
             for (int column = 1; column <= N-1; column++) {
                 for (int row = 1; row <= N; row++) {
-                    String clause = "-" + toEqualitiesVariableHorizontal(2,row,column) + " -" + toBoardVariable(digit,row,column)+" ";
+                    String clause = "-" + toEqualitiesVariableHorizontal(LESS_THAN_EQUALITY,row,column) + " -" + toBoardVariable(digit,row,column)+" ";
                     for(int num = digit+1; num<=N; num++)
                     {
                         clause+=String.valueOf(toBoardVariable(num,row,column+1))+" ";
@@ -158,7 +194,7 @@ public class Futoshiki_CNF {
         for (int digit = 1; digit <= N; digit++) {
             for (int column = 1; column <= N-1; column++) {
                 for (int row = 1; row <= N; row++) {
-                    String clause = "-" + toEqualitiesVariableHorizontal(3,row,column) + " -" + toBoardVariable(digit,row,column)+" ";
+                    String clause = "-" + toEqualitiesVariableHorizontal(GREATER_THAN_EQUALITY,row,column) + " -" + toBoardVariable(digit,row,column)+" ";
                     for(int num = 1 ; num<=digit-1; num++)
                     {
                         clause+=String.valueOf(toBoardVariable(num,row,column+1))+" ";
@@ -174,7 +210,7 @@ public class Futoshiki_CNF {
         for (int digit = 1; digit <= N; digit++) {
             for (int column = 1; column <= N; column++) {
                 for (int row = 1; row <= N-1; row++) {
-                    String clause = "-" + toEqualitiesVariableVertical(2,row,column) + " -" + toBoardVariable(digit,row,column)+" ";
+                    String clause = "-" + toEqualitiesVariableVertical(LESS_THAN_EQUALITY,row,column) + " -" + toBoardVariable(digit,row,column)+" ";
                     for(int num = digit+1; num<=N; num++)
                     {
                         clause+=String.valueOf(toBoardVariable(num,row+1,column))+" ";
@@ -190,7 +226,7 @@ public class Futoshiki_CNF {
         for (int digit = 1; digit <= N; digit++) {
             for (int column = 1; column <= N; column++) {
                 for (int row = 1; row <= N-1; row++) {
-                    String clause = "-" + toEqualitiesVariableVertical(3,row,column) + " -" + toBoardVariable(digit,row,column)+" ";
+                    String clause = "-" + toEqualitiesVariableVertical(GREATER_THAN_EQUALITY,row,column) + " -" + toBoardVariable(digit,row,column)+" ";
                     for(int num = 1 ; num<=digit-1; num++)
                     {
                         clause+=String.valueOf(toBoardVariable(num,row+1,column))+" ";
@@ -287,12 +323,13 @@ public class Futoshiki_CNF {
                 tmpBoard[row][column] = -1;
             }
         }
-        for (int i = 0; i < variables.length-EQUALITS*2; i++) {
+        for (int i = 0; i < BOARDN; i++) {
             if(variables[i] > 0){
                 digit = (variables[i]-1)/BOARD;
                 tmp = (variables[i]-1)%BOARD;
                 row = tmp/N;
                 column = tmp%N;
+
                 tmpBoard[row][column] = digit;
             }
         }
@@ -303,18 +340,18 @@ public class Futoshiki_CNF {
                 equalisesBoardHorizontal[row][column] = "Error";
             }
         }
-        for (int i = BOARDN; i < variables.length-EQUALITS; i++) {
+        for (int i = BOARDN; i < BOARDN+EQUALITS; i++) {
             if(variables[i] > 0){
                 int equality = (variables[i]-1-BOARDN)/EQUALITY_SPACES;
                 String equalityDisplay = "E";
                 switch (equality+1){
-                    case 1:
+                    case NO_EQUALITY:
                         equalityDisplay = " ";
                         break;
-                    case 2:
+                    case LESS_THAN_EQUALITY:
                         equalityDisplay = "<";
                         break;
-                    case 3:
+                    case GREATER_THAN_EQUALITY:
                         equalityDisplay = ">";
                         break;
                 }
@@ -331,18 +368,18 @@ public class Futoshiki_CNF {
                 equalisesBoardVertical[row][column] = "Error";
             }
         }
-        for (int i = BOARDN+EQUALITS; i < variables.length; i++) {
+        for (int i = BOARDN+EQUALITS; i < BOARDN+(EQUALITS*2); i++) {
             if(variables[i] > 0){
                 int equality = (variables[i]-1-BOARDN-EQUALITS)/EQUALITY_SPACES;
                 String equalityDisplay = String.valueOf(equality);
                 switch (equality+1){
-                    case 1:
+                    case NO_EQUALITY:
                         equalityDisplay = " ";
                         break;
-                    case 2:
+                    case LESS_THAN_EQUALITY:
                         equalityDisplay = "^";
                         break;
-                    case 3:
+                    case GREATER_THAN_EQUALITY:
                         equalityDisplay = "V";
                         break;
                 }
@@ -356,7 +393,6 @@ public class Futoshiki_CNF {
         System.out.println("=======================");
         System.out.println("===== Given board =====");
         System.out.println("=======================");
-
 
         for (row = 0; row < N; row++) {
             System.out.print("   ");
