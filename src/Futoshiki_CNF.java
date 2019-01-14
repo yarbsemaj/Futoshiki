@@ -22,7 +22,7 @@ public class Futoshiki_CNF {
     static final int VARS = BOARDN+EQUALITS+EQUALITS;
     static int clauses = 0;
     static ArrayList<String> DIMACS_CNF = new ArrayList();
-    static int[] solution = {-1,-2,-3,4,-5,-6,7,-8,-9,10,-11,-12,13,-14,-15,-16,-17,18,-19,-20,21,-22,-23,-24,-25,-26,-27,28,-29,-30,31,-32,33,-34,-35,-36,-37,-38,-39,40,-41,-42,43,-44,-45,46,-47,-48,-49,-50,51,-52,-53,54,-55,-56,57,-58,-59,-60,-61,-62,-63,64,65,66,67,68,69,70,71,72,73,-74,75,76,-77,-78,-79,-80,-81,-82,-83,-84,-85,86,-87,-88,-89,-90,-91,-92,-93,-94,-95,-96,-97,-98,-99,-100,101,102,103,104,105,106,107,108,-109,110,111,112,-113,-114,-115,-116,-117,-118,-119,-120,-121,-122,-123,-124,-125,-126,-127,-128,-129,-130,-131,-132,133,-134,-135,-136};
+    static int[] solution ={};
     static final int NO_EQUALITY = 1;
     static final int GREATER_THAN_EQUALITY = 3;
     static final int LESS_THAN_EQUALITY = 2;
@@ -74,11 +74,9 @@ public class Futoshiki_CNF {
         // Facts
         DIMACS_CNF.add("c Pre-assigned entries");
         // Update the number of facts according to the number of added DIMACS CNF clauses
-        int facts=3;
-        DIMACS_CNF.add(toEqualitiesVariableHorizontal(LESS_THAN_EQUALITY, 4, 1) + " 0");
-        DIMACS_CNF.add(toEqualitiesVariableHorizontal(GREATER_THAN_EQUALITY, 4, 1) + " 0");
-        DIMACS_CNF.add(toEqualitiesVariableVertical(GREATER_THAN_EQUALITY, 3, 1) + " 0");
-
+        int facts=0;
+        //DIMACS_CNF.add(toEqualitiesVariableHorizontal(LESS_THAN_EQUALITY, 4, 1) + " 0");
+        //DIMACS_CNF.add(toEqualitiesVariableVertical(GREATER_THAN_EQUALITY, 3, 1) + " 0");
         //DIMACS_CNF.add(toBoardVariable(4, 4, 1) + " 0");
         clauses += facts; 
     }
